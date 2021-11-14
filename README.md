@@ -27,4 +27,6 @@ Reproduced Results (3 runs):
     Test set: Average loss: 0.0486, Accuracy: 9854/10000 (99%)
     Test set: Average loss: 0.0492, Accuracy: 9876/10000 (99%)
 
-Reorganizing Code (rerun baseline using):
+Reorganizing Code (rerun baseline w train.py commit: 0a141f1c37a9d115c1acc0621bf328ae2233f95f):
+    Test set: Average loss: 0.0390, Accuracy: 9890/10000 (99%)
+    Test set: Average loss: 0.0390, Accuracy: 9890/10000 (99%)
