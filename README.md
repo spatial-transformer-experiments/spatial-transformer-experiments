@@ -26,3 +26,5 @@ Reproduced Results (3 runs):
     Test set: Average loss: 0.0513, Accuracy: 9852/10000 (99%)
     Test set: Average loss: 0.0486, Accuracy: 9854/10000 (99%)
     Test set: Average loss: 0.0492, Accuracy: 9876/10000 (99%)
+
+Reorganizing Code (rerun baseline using):
