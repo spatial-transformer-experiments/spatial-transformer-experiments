@@ -61,7 +61,8 @@ def train(model,experiment_name):
 
     ######################################################################
     # Visualize the STN transformation on some input batch
-    visualize_stn(model=model,test_loader=test_loader)
+    fig = visualize_stn(model=model,test_loader=test_loader)
+    fig.savefig(f"experiments/{experiment_name}/visualized_transformation.png")
 
     ######################################################################
     #Compute confusion matrix and log to experiment dir
@@ -121,7 +122,9 @@ def test_final(model,test_loader,experiment_name):
             
             confusion_matrix.add_batch(pred=pred.view_as(target),target=target)
 
-        confusion_matrix.plot_confusion_matrix(save_path=f"experiments/{experiment_name}/confusion_matrix.png",title=experiment_name)   
+        #fig = confusion_matrix.plot_confusion_matrix(save_path=f"experiments/{experiment_name}/confusion_matrix.png",title=experiment_name)   
+        fig = confusion_matrix.plot_confusion_matrix(title=experiment_name)
+        fig.savefig(f"experiments/{experiment_name}/confusion_matrix.png")  
 
         test_loss /= len(test_loader.dataset)
         print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'
@@ -167,6 +170,7 @@ def visualize_stn(model,test_loader):
 
         axarr[1].imshow(out_grid)
         axarr[1].set_title('Transformed Images')
+        return f
 
 
 
