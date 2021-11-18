@@ -11,7 +11,7 @@ import torchvision
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import numpy as np
-from models import Net
+from models import Net, Net_CoordConv
 from confusion_matrix import ConfusionMatrix
 from six.moves import urllib
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -175,5 +175,5 @@ def visualize_stn(model,test_loader):
 
 
 if __name__=="__main__":
-    model=Net()
-    train(model=model,experiment_name="test")   
+    model=Net_CoordConv(bypass_localisation=True)
+    train(model=model,experiment_name="test")
