@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
+import torch.utils.tensorboard
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,13 +52,19 @@ def train(model,experiment_name):
             transforms.Normalize((0.1307,), (0.3081,))
         ])), batch_size=64, shuffle=True, num_workers=4)
 
+
+    ######################################################################
+    # Setup Tensorboard Summary writer
+    summary_writer = torch.utils.tensorboard.writer.SummaryWriter(f"experiments/{experiment_name}")
+
     ######################################################################
     # Training the model
     optimizer = optim.SGD(model.parameters(), lr=0.01)
 
     for epoch in range(1, 20 + 1):
-        train_epoch(model=model,epoch=epoch,train_loader=train_loader,optimizer=optimizer)
-        test(model=model,test_loader=test_loader)
+        train_epoch(model=model,epoch=epoch,train_loader=train_loader,optimizer=optimizer,summary_writer=summary_writer)
+
+        test(model=model,epoch=epoch,test_loader=test_loader,summary_writer=summary_writer)
 
     ######################################################################
     # Visualize the STN transformation on some input batch
@@ -68,8 +75,9 @@ def train(model,experiment_name):
     #Compute confusion matrix and log to experiment dir
     test_final(model=model,test_loader=test_loader,experiment_name=experiment_name)
 
-def train_epoch(model,epoch,train_loader,optimizer):
+def train_epoch(model,epoch,train_loader,optimizer,summary_writer):
     model.train()
+    total_train_loss = 0
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
 
@@ -82,40 +90,46 @@ def train_epoch(model,epoch,train_loader,optimizer):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
+        total_train_loss+=loss  
 
-def test(model,test_loader):
+    avg_train_loss = total_train_loss / len(train_loader.dataset)          
+    summary_writer.add_scalar("Average loss train", avg_train_loss, epoch)
+
+def test(model,epoch,test_loader,summary_writer):
     with torch.no_grad():
         model.eval()
-        test_loss = 0
+        total_test_loss = 0
         correct = 0
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
 
             # sum up batch loss
-            test_loss += F.nll_loss(output, target, size_average=False).item()
+            total_test_loss += F.nll_loss(output, target, size_average=False).item()
             # get the index of the max log-probability
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).sum().item()
 
-        test_loss /= len(test_loader.dataset)
+        avg_test_loss = total_test_loss / len(test_loader.dataset)
         print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'
-              .format(test_loss, correct, len(test_loader.dataset),
+              .format(avg_test_loss, correct, len(test_loader.dataset),
                       100. * correct / len(test_loader.dataset)))
+
+        summary_writer.add_scalar("Average loss test", avg_test_loss, epoch,)
 
 def test_final(model,test_loader,experiment_name):
     confusion_matrix = ConfusionMatrix()
 
     with torch.no_grad():
         model.eval()
-        test_loss = 0
+        total_test_loss = 0
         correct = 0
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
 
             # sum up batch loss
-            test_loss += F.nll_loss(output, target, size_average=False).item()
+            total_test_loss += F.nll_loss(output, target, size_average=False).item()
             # get the index of the max log-probability
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).sum().item()
@@ -126,14 +140,14 @@ def test_final(model,test_loader,experiment_name):
         fig = confusion_matrix.plot_confusion_matrix(title=experiment_name)
         fig.savefig(f"experiments/{experiment_name}/confusion_matrix.png")  
 
-        test_loss /= len(test_loader.dataset)
+        avg_test_loss = total_test_loss / len(test_loader.dataset)
         print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'
-            .format(test_loss, correct, len(test_loader.dataset),
+            .format(avg_test_loss, correct, len(test_loader.dataset),
                     100. * correct / len(test_loader.dataset)))
 
         result_dict = {
             "experiment_name":experiment_name,
-            "test_loss":test_loss,
+            "avg_test_loss":avg_test_loss,
             "test_accuracy": 100. * correct / len(test_loader.dataset),
             "test_correct": correct,
             "test_total":len(test_loader.dataset)
