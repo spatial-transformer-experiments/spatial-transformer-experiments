@@ -77,7 +77,8 @@ class Net(nn.Module):
 ######################################################################
 #Implement CoordConv and first experiment ideas
 # allows to use CoordConv on the localisation network or the classifier network or both
-# further the localisation can be by passed to determine the localisation of the 
+# further the localisation can be by passed to determine the influence of the localisation
+# The default initalisation leads to a module identical to the Net module
 
 
 class Net_CoordConv(nn.Module):
@@ -160,6 +161,9 @@ class Net_CoordConv(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
+######################################################################
+# Tries to replace the affine transformation with a homography transformation
+# Not working so far
 class Net_CoordConv_Homography(Net_CoordConv):
     def __init__(self,use_coordconf_localisation=False,use_coordconf_classifier=False,bypass_localisation=False):
         super(Net_CoordConv_Homography, self).__init__(use_coordconf_localisation=use_coordconf_localisation,use_coordconf_classifier=use_coordconf_classifier,bypass_localisation=bypass_localisation)
