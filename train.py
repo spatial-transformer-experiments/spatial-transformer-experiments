@@ -12,7 +12,7 @@ import torch.utils.tensorboard
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import numpy as np
-from models import Net, Net_CoordConv
+from models import Net, Net_CoordConv, Net_CoordConv_Homography
 from confusion_matrix import ConfusionMatrix
 from six.moves import urllib
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -25,7 +25,7 @@ SEED = 123
 torch.manual_seed(SEED)
 np.random.seed(SEED)
 
-def train(model,experiment_name):
+def train(model,experiment_name,n_epochs=20):
     #create experiment dir
     pathlib.Path(f"experiments/{experiment_name}").mkdir(exist_ok=experiment_name=="test")
     
@@ -61,7 +61,7 @@ def train(model,experiment_name):
     # Training the model
     optimizer = optim.SGD(model.parameters(), lr=0.01)
 
-    for epoch in range(1, 20 + 1):
+    for epoch in range(1, n_epochs + 1):
         train_epoch(model=model,epoch=epoch,train_loader=train_loader,optimizer=optimizer,summary_writer=summary_writer)
 
         test(model=model,epoch=epoch,test_loader=test_loader,summary_writer=summary_writer)
@@ -116,6 +116,7 @@ def test(model,epoch,test_loader,summary_writer):
                       100. * correct / len(test_loader.dataset)))
 
         summary_writer.add_scalar("Average loss test", avg_test_loss, epoch,)
+        summary_writer.add_scalar("Accuracy test",100. * correct / len(test_loader.dataset),epoch)
 
 def test_final(model,test_loader,experiment_name):
     confusion_matrix = ConfusionMatrix()
@@ -165,6 +166,10 @@ def convert_image_np(inp):
 
 def visualize_stn(model,test_loader):
     with torch.no_grad():
+        
+        # prevent matplotlib from opening a window
+        plt.ioff()
+
         # Get a batch of training data
         data = next(iter(test_loader))[0].to(device)
 
@@ -189,5 +194,5 @@ def visualize_stn(model,test_loader):
 
 
 if __name__=="__main__":
-    model=Net_CoordConv(bypass_localisation=True)
+    model=Net_CoordConv_Homography()
     train(model=model,experiment_name="test")

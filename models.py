@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from coordconv import CoordConv2d
+# import kornia
 
 ######################################################################
 # Depicting spatial transformer networks
@@ -157,3 +158,36 @@ class Net_CoordConv(nn.Module):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
+
+
+class Net_CoordConv_Homography(Net_CoordConv):
+    def __init__(self,use_coordconf_localisation=False,use_coordconf_classifier=False,bypass_localisation=False):
+        super(Net_CoordConv_Homography, self).__init__(use_coordconf_localisation=use_coordconf_localisation,use_coordconf_classifier=use_coordconf_classifier,bypass_localisation=bypass_localisation)
+        
+        
+        # Overrite attributes for homography
+
+        # Regressor for the 3 * 3 homography matrix
+        self.fc_loc = nn.Sequential(
+            nn.Linear(10 * 3 * 3, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 3 * 3)
+        )
+
+        # Initialize the weights/bias with identity transformation
+        self.fc_loc[2].weight.data.zero_()
+        self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0, 0, 0, 1], dtype=torch.float))
+
+    def stn(self, x):
+        if self.bypass_localisation:
+            return x
+        else:
+            xs = self.localization(x)
+            xs = xs.view(-1, 10 * 3 * 3)
+            theta = self.fc_loc(xs)
+            theta = theta.view(-1, 3, 3)
+            theta = torch.nn.functional.normalize(theta,dim=0)
+            x = torch.nn.functional.normalize(x,dim=0)
+            x = kornia.geometry.transform.warp_perspective(x, theta, dsize=(x.shape[-2],x.shape[-1]),)
+
+            return x
