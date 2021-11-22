@@ -8,12 +8,13 @@ Using the provided YAML file:
     conda env create --file stn.cpu.yml
 
 
- ## conda environment install (alternative install)
+## conda environment install (alternative install)
 
     conda create --name stn.cpu
     conda activate stn.cpu
     conda install pytorch torchvision torchaudio cpuonly -c pytorch
     conda install matplotlib
+    conda install -c conda-forge tensorboard
 
 ## reproducing baseline 
 
