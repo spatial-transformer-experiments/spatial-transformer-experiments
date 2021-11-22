@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from coordconv import CoordConv2d
-# import kornia
+import kornia
 
 ######################################################################
 # Depicting spatial transformer networks
