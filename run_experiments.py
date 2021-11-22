@@ -26,8 +26,8 @@ def run_experiments():
     # Use coordconf for both the classifier and the localisation
     train(model=Net_CoordConv(use_coordconf_localisation=True,use_coordconf_classifier=True),experiment_name="exp_07_run_01_coordconf_localistation_coordconf_classifier",n_epochs=30)
     
-
-    #train(model=Net_CoordConv_Homography(),experiment_name="exp_07_run_01_homography",epochs=40)
+    # Unfinished work
+    # train(model=Net_CoordConv_Homography(),experiment_name="exp_07_run_01_homography",epochs=40)
     # train(model=Net_CoordConv_Homography(use_coordconf_classifier=True),experiment_name="exp_08_run_01_homography_coordconf_classifier")    
     # train(model=Net_CoordConv_Homography(use_coordconf_localisation=True),experiment_name="exp_09_run_01_homography_coordconf_localistation")
     # train(model=Net_CoordConv_Homography(use_coordconf_localisation=True,use_coordconf_classifier=True),experiment_name="exp_10_run_01_homography_coordconf_localistation_coordconf_classifier")
