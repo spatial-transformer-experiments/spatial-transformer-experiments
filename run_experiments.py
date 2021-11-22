@@ -10,7 +10,7 @@ def run_experiments():
     # Runs the Net_CoordConv with the configuration that corresponds to Net with increased n epochs
     train(model=Net_CoordConv(),experiment_name="exp_02_run_01_reproduce_baseline",n_epochs=30)
 
-    # Determine  how big the influence of the localisation network is
+    # Determine how big the influence of the localisation network is
     # In order to do that the localistation network is bypassed
     train(model=Net_CoordConv(bypass_localisation=True),experiment_name="exp_03_run_01_bypass_localisation",n_epochs=30)
     
